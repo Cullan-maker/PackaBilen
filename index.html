@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="sv">
 <head>
@@ -11,7 +12,13 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background: #f1f5f9; overscroll-behavior-y: none; }
+        body, html { 
+            font-family: 'Inter', sans-serif; 
+            background: #f1f5f9; 
+            overscroll-behavior-y: none;
+            height: 100%;
+            overflow: hidden; /* Förhindrar pull-to-refresh studs */
+        }
         .ikea-blue { background: #0051ba; color: #fff; transition: all 0.2s; }
         .ikea-blue:active { background: #004099; transform: scale(0.98); }
         .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -29,7 +36,7 @@
 <body class="text-slate-800">
 
 <!-- HUVUDVY: START & INMATNING -->
-<div id="mainView" class="flex flex-col h-screen min-h-[100dvh] relative">
+<div id="mainView" class="flex flex-col h-[100dvh] relative">
     
     <header class="bg-white px-5 pt-12 pb-4 shadow-sm z-10 shrink-0">
         <h1 class="text-2xl font-extrabold tracking-tight text-gray-900 flex items-center gap-3">
@@ -94,7 +101,7 @@
                 <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-2">
                     <i class="fa-solid fa-box-open text-xl text-gray-300"></i>
                 </div>
-                <p class="text-[11px] text-gray-400 max-w-[200px]">Listan är tom. Skanna in dina varor för att bygga 3D-planen.</p>
+                <p class="text-[11px] text-gray-400 max-w-[200px]">Listan är tom. Klistra in dina varor för att bygga 3D-planen.</p>
             </div>
         </div>
     </main>
@@ -108,11 +115,11 @@
 </div>
 
 
-<!-- RESULTATVY (App Split-screen) -->
-<div id="resultModal" class="fixed inset-0 bg-white hidden flex-col z-[100] h-screen min-h-[100dvh] transform translate-y-full transition-transform duration-300 ease-out">
+<!-- RESULTATVY (App Split-screen) Låst till 100dvh för att fixa skrollbuggen! -->
+<div id="resultModal" class="fixed inset-0 bg-white hidden flex-col z-[100] h-[100dvh] max-h-[100dvh] overflow-hidden transform translate-y-full transition-transform duration-300 ease-out">
     
-    <!-- Övre halvan: 3D Vy -->
-    <div class="relative h-[45vh] bg-slate-100 shrink-0 border-b border-gray-200">
+    <!-- Övre halvan: 3D Vy (Låst höjd för att lämna plats åt listan) -->
+    <div class="relative h-[40dvh] min-h-[40dvh] bg-slate-100 shrink-0 border-b border-gray-200 shadow-sm z-10">
         <!-- Tillbaka-knapp -->
         <button onclick="closeModal()" class="absolute top-12 left-4 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md z-30 flex items-center justify-center text-slate-700 active:scale-90 transition-transform">
             <i class="fa-solid fa-chevron-left"></i>
@@ -144,28 +151,14 @@
         </div>
     </div>
 
-    <!-- Nedre halvan: Info & Lista -->
-    <div class="flex-1 overflow-y-auto bg-white p-5 pb-8">
+    <!-- Nedre halvan: Info & Lista (Denna rullar internt och pressar inte ner sidan!) -->
+    <div class="flex-1 overflow-y-auto bg-white p-5 pb-12">
         
         <div class="flex items-center gap-4 mb-5 shrink-0">
             <div id="resultIcon" class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-sm shrink-0"></div>
             <div>
                 <h2 id="resultTitle" class="text-xl font-extrabold text-gray-900 tracking-tight leading-none mb-1"></h2>
                 <p id="resultSubtitle" class="text-[11px] text-gray-500 font-medium"></p>
-            </div>
-        </div>
-
-        <!-- Freetrailer Banner -->
-        <div id="trailerBanner" class="hidden flex-col gap-2 mb-5 bg-amber-50 border border-amber-200 rounded-2xl p-4">
-            <div class="flex gap-3">
-                <i class="fa-solid fa-trailer text-amber-500 text-lg mt-0.5"></i>
-                <div>
-                    <strong class="text-xs text-amber-900">Behöver du mer plats?</strong>
-                    <p id="trailerReason" class="text-[10px] text-amber-800 mt-0.5"></p>
-                    <a href="https://freetrailer.com/se/" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex items-center justify-center bg-amber-500 text-white px-3 py-2 rounded-lg text-[10px] font-bold active:scale-95 transition-transform shadow-sm">
-                        Boka ett gratis släp <i class="fa-solid fa-arrow-up-right-from-square ml-1.5"></i>
-                    </a>
-                </div>
             </div>
         </div>
 
@@ -225,7 +218,7 @@ const carDatabase = {
 
 const boxColors = [0x3b82f6, 0xef4444, 0x10b981, 0xf59e0b, 0x8b5cf6, 0xec4899, 0x06b6d4, 0xf97316];
 let currentList = [], globalResults = {}, currentResult = null;
-let scene, camera, renderer, controls, mainGroup, raycaster, mouse, selectedMesh = null;
+let scene, camera, renderer, controls, mainGroup, carGroup, raycaster, mouse, selectedMesh = null;
 
 function updateCarInfo() {
     const c = carDatabase[carSelect.value];
@@ -557,18 +550,6 @@ function renderResult(mode, car) {
     document.getElementById('resultIcon').className = 'w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-sm shrink-0 ' + (all ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600');
     document.getElementById('resultIcon').innerHTML = `<i class="fa-solid fa-${all ? 'check-double' : 'triangle-exclamation'}"></i>`;
     
-    const trailerBanner = document.getElementById('trailerBanner');
-    const trailerReason = document.getElementById('trailerReason');
-    
-    if (!all) {
-        trailerBanner.classList.remove('hidden');
-        trailerBanner.classList.add('flex');
-        trailerReason.textContent = over ? 'Din last överstiger bilens maxvikt.' : 'Alla varor får tyvärr inte plats.';
-    } else {
-        trailerBanner.classList.add('hidden');
-        trailerBanner.classList.remove('flex');
-    }
-    
     const planTabs = document.getElementById('planTabs');
     planTabs.innerHTML = '';
     Object.values(globalResults).forEach(x => {
@@ -647,33 +628,40 @@ function init3D() {
     renderer.xr.enabled = true; // Aktivera WebXR
     c.appendChild(renderer.domElement);
     
-    // WebXR AR Knapp med Nollpunkts-logik
+    // NY, SMART AR-KNAPP: Visar BARA paketen inuti din fysiska bil!
     if ('xr' in navigator) {
         navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
             if (supported) {
                 const arBtn = document.createElement('button');
-                arBtn.innerHTML = '<i class="fa-solid fa-camera mr-2"></i> AR';
-                arBtn.className = 'absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-5 py-2.5 rounded-full text-[11px] font-bold shadow-xl z-20 flex items-center justify-center active:scale-95 transition-transform border-2 border-white/10';
+                arBtn.innerHTML = '<i class="fa-solid fa-camera mr-2"></i> Packa min bil i AR';
+                arBtn.className = 'absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-5 py-3 rounded-full text-xs font-bold shadow-xl z-20 flex items-center justify-center active:scale-95 transition-transform pointer-events-auto';
                 
                 arBtn.onclick = () => {
                     navigator.xr.requestSession('immersive-ar', { optionalFeatures: ['local-floor'] }).then((session) => {
                         renderer.xr.setSession(session);
                         
-                        const car = currentResult ? currentResult.car : carDatabase[carSelect.value];
+                        // 1. GÖM BILEN: I AR vill användaren bara se paketen inuti sin EGEN bil
+                        if (carGroup) carGroup.visible = false;
                         
-                        // 1. Skala om för AR (1 enhet i ThreeJS = 1 meter i WebXR, våra mått är i cm)
+                        // 2. Skala om (1 enhet = 1 meter)
                         mainGroup.scale.set(0.01, 0.01, 0.01);
                         
-                        // 2. Bestäm Nollpunkten. Vi vill att bagageluckan (som är vid z = -car.maxL/2 i vår grupp)
-                        // ska hamna exakt 1 meter framför användaren (z = -1).
-                        const zOffset = -1 + ((car.maxL / 2) * 0.01);
+                        // 3. Rotera 180 grader. Telefonen tittar IN i skuffen, så paketen måste sträcka sig inåt.
+                        mainGroup.rotation.y = Math.PI;
                         
-                        // Sänk modellen lite mot golvet (y = -0.5 meter, anpassas dynamiskt vid local-floor tracking)
-                        mainGroup.position.set(0, -0.5, zOffset);
+                        const car = currentResult ? currentResult.car : carDatabase[carSelect.value];
+                        
+                        // 4. Ställ in Nollpunkten. Vi sätter bagageluckans kant ca 0.5 meter framför telefonen.
+                        const zOffset = -0.5 - ((car.maxL / 2) * 0.01);
+                        
+                        // Sänk ner paketen något, då telefonen oftast hålls i brösthöjd.
+                        mainGroup.position.set(0, -0.4, zOffset);
                         
                         session.addEventListener('end', () => {
-                            // Återställ skala och position när användaren stänger AR
+                            // Återställ allt när AR stängs av
+                            if (carGroup) carGroup.visible = true;
                             mainGroup.scale.set(1, 1, 1);
+                            mainGroup.rotation.y = 0;
                             mainGroup.position.set(0, 0, 0);
                             resetCamera();
                         });
@@ -800,8 +788,9 @@ function update3D(car, placed, mode) {
     init3D();
     while (mainGroup.children.length) mainGroup.remove(mainGroup.children[0]);
     
-    const g = createCar(car, mode); 
-    mainGroup.add(g);
+    // Bilens kaross sparas i en separat, global grupp så att vi kan gömma den i AR
+    carGroup = createCar(car, mode); 
+    mainGroup.add(carGroup);
     
     placed.forEach(it => {
         const mesh = box(mainGroup, it.w, it.h, it.l, it.x - car.w/2, it.y, it.z - car.maxL/2, mat(it.color, 0.95));
@@ -838,3 +827,4 @@ updateCarInfo();
 </script>
 </body>
 </html>
+```
