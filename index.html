@@ -1,222 +1,209 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>PackaBilen Pro</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/webxr/ARButton.js"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
-*{box-sizing:border-box}
-body{font-family:'Inter',sans-serif;background:#f8fafc;background-image:radial-gradient(#e2e8f0 1px,transparent 1px);background-size:20px 20px}
-.ikea-blue{background:#0051ba;color:#fff;transition:all 0.2s}
-.ikea-blue:hover{background:#004099}
-.slide-up{animation:slideUp .35s cubic-bezier(.16,1,.3,1)}
-@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
-
-#canvasContainer{position:absolute;inset:0;outline:none;touch-action:none;width:100%;height:100%}
-#canvasContainer canvas{display:block;width:100%;height:100%}
-.view-btn{background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:7px 9px;font-size:11px;font-weight:700;color:#334155;box-shadow:0 2px 7px #00000010;transition:all 0.2s; cursor:pointer;}
-.view-btn:hover{background:#f1f5f9;border-color:#cbd5e1}
-
-@media print{
-    body { background: white !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-    body > *:not(#resultModal) { display: none !important; }
-    #resultModal { display: block !important; position: absolute !important; inset: 0 !important; background: #fff !important; opacity: 1 !important; height: auto !important; overflow: visible !important; z-index: 9999 !important; box-shadow: none !important; }
-    #resultModal > div { height: auto !important; overflow: visible !important; display: block !important; box-shadow: none !important; border: none !important; padding: 0 !important; }
-    #resultModal > div > div { width: 100% !important; height: auto !important; overflow: visible !important; }
-    .no-print { display: none !important; }
-    .print-break { page-break-before: always; break-before: page; display: block !important; margin-top: 30px !important; }
-    .print-item { page-break-inside: avoid; break-inside: avoid; border: 1px solid #cbd5e1 !important; margin-bottom: 8px !important; background: white !important; }
-    #canvasContainer { height: 380px !important; position: relative !important; border: 1px solid #cbd5e1 !important; page-break-inside: avoid; break-inside: avoid; }
-}
-::-webkit-scrollbar { width: 6px; } 
-::-webkit-scrollbar-track { background: transparent; } 
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-</style>
-</head>
-<body class="min-h-screen flex items-start md:items-center justify-center md:p-8 overflow-x-hidden">
-
-<div class="bg-white md:rounded-[2rem] shadow-none md:shadow-2xl w-full max-w-6xl flex flex-col md:flex-row h-screen md:h-[90vh] border md:border-gray-100 overflow-hidden relative">
-    
-    <section class="w-full md:w-5/12 bg-gray-50 p-6 flex flex-col overflow-y-auto border-b md:border-b-0 md:border-r border-gray-200">
-        <div class="mb-6 mt-2 md:mt-0">
-            <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 flex items-center gap-3">
-                <div class="w-12 h-12 rounded-xl ikea-blue flex items-center justify-center shadow-lg -rotate-3"><i class="fa-solid fa-truck-ramp-box text-white"></i></div>
-                PackaBilen Pro
-            </h1>
-            <p class="text-xs text-gray-500 mt-2 font-medium">Realistisk lastmotor · Smart stapling & 3D.</p>
-        </div>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>PackaBilen App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: #f1f5f9; overscroll-behavior-y: none; }
+        .ikea-blue { background: #0051ba; color: #fff; transition: all 0.2s; }
+        .ikea-blue:active { background: #004099; transform: scale(0.98); }
+        .slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: none; } }
         
-        <div class="mb-6">
-            <h2 class="font-bold text-gray-700 mb-2 text-[11px] uppercase tracking-widest">1 · Välj bilmodell</h2>
-            <select id="carSelect" onchange="handleCarSelect()" class="w-full p-3.5 border-2 border-gray-200 rounded-xl bg-white font-bold text-gray-700 outline-none focus:border-blue-500 text-sm shadow-sm transition-all cursor-pointer">
+        /* 3D Canvas Styles */
+        #canvasContainer { outline: none; touch-action: none; width: 100%; height: 100%; }
+        #canvasContainer canvas { display: block; width: 100%; height: 100%; }
+        .view-btn { background: rgba(255,255,255,0.9); backdrop-filter: blur(4px); border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; font-size: 10px; font-weight: 700; color: #334155; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        
+        /* Göm rullningslister i mobilen för en renare app-känsla */
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="text-slate-800">
+
+<!-- HUVUDVY: START & INMATNING -->
+<div id="mainView" class="flex flex-col h-screen min-h-[100dvh] relative">
+    
+    <header class="bg-white px-5 pt-12 pb-4 shadow-sm z-10 shrink-0">
+        <h1 class="text-2xl font-extrabold tracking-tight text-gray-900 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl ikea-blue flex items-center justify-center shadow-md -rotate-3">
+                <i class="fa-solid fa-truck-ramp-box text-white text-lg"></i>
+            </div>
+            PackaBilen
+        </h1>
+        <p class="text-[11px] text-gray-500 mt-1.5 font-medium">Realistisk lastning & AR-stöd.</p>
+    </header>
+
+    <main class="flex-1 overflow-y-auto p-5 pb-32">
+        <!-- 1. Välj Bil -->
+        <div class="mb-6 slide-up" style="animation-delay: 0.05s; animation-fill-mode: both;">
+            <h2 class="font-bold text-gray-700 mb-2 text-[10px] uppercase tracking-widest">1 · Välj bilmodell</h2>
+            <select id="carSelect" onchange="updateCarInfo()" class="w-full p-4 border-2 border-gray-200 rounded-2xl bg-white font-bold text-gray-800 outline-none focus:border-blue-500 text-sm shadow-sm appearance-none">
                 <option value="vw_passat_b8_2017" selected>VW Passat B8 (Kombi)</option>
                 <option value="volvo_v90">Volvo V90 (Kombi)</option>
                 <option value="tesla_modely">Tesla Model Y (SUV)</option>
                 <option value="volvo_xc40">Volvo XC40 (Kompakt)</option>
                 <option value="vw_golf">VW Golf (Halvkombi)</option>
                 <option value="fiat_500">Fiat 500 (Småbil)</option>
-                <option disabled>──────────</option>
-                <option value="add_custom">+ Lägg till egen bil...</option>
             </select>
-            
-            <div id="carSpecs" class="mt-2 text-[11px] bg-blue-50/70 p-3 rounded-lg border border-blue-100 text-blue-800 leading-relaxed font-medium"></div>
-            
-            <!-- Crowdsourcing Formulär för bilar (Dolt som standard) -->
-            <div id="customCarForm" class="hidden mt-3 p-4 bg-white border-2 border-blue-200 rounded-xl shadow-sm slide-up">
-                <h3 class="text-xs font-bold text-blue-800 mb-3"><i class="fa-solid fa-car-side mr-1"></i> Skapa anpassad bil</h3>
-                <input type="text" id="ccName" placeholder="T.ex. Audi A4 Kombi" class="w-full p-2.5 mb-2 border border-gray-300 rounded-lg text-xs outline-none focus:border-blue-500">
-                <div class="grid grid-cols-2 gap-2 mb-3">
-                    <input type="number" id="ccL" placeholder="Max lastlängd (cm)" class="p-2.5 border border-gray-300 rounded-lg text-xs outline-none focus:border-blue-500">
-                    <input type="number" id="ccW" placeholder="Minsta bredd (cm)" class="p-2.5 border border-gray-300 rounded-lg text-xs outline-none focus:border-blue-500">
-                    <input type="number" id="ccH" placeholder="Höjd på lucka (cm)" class="p-2.5 border border-gray-300 rounded-lg text-xs outline-none focus:border-blue-500">
-                    <input type="number" id="ccMaxW" placeholder="Maxlast (kg)" class="p-2.5 border border-gray-300 rounded-lg text-xs outline-none focus:border-blue-500">
-                </div>
-                <div class="flex gap-2">
-                    <button onclick="saveCustomCar()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold py-2.5 transition-colors">Spara till listan</button>
-                    <button onclick="cancelCustomCar()" class="px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition-colors">Avbryt</button>
-                </div>
-            </div>
+            <div id="carSpecs" class="mt-2 text-[11px] bg-blue-50/70 p-3 rounded-xl border border-blue-100 text-blue-800 leading-relaxed font-medium"></div>
         </div>
 
-        <div>
-            <h2 class="font-bold text-gray-700 mb-2 text-[11px] uppercase tracking-widest">2 · Klistra in orderbekräftelse</h2>
-            <textarea id="importText" placeholder="Klistra in hela orderbekräftelsen från IKEA här..." class="w-full h-[150px] p-4 rounded-xl border-2 border-dashed border-gray-300 outline-none text-xs bg-white resize-none focus:border-blue-400 focus:bg-blue-50/30 transition-all shadow-inner"></textarea>
-            
-            <button onclick="parseOrderText()" class="mt-3 w-full ikea-blue py-3.5 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Analysera order
+        <!-- 2. Lägg till varor -->
+        <div class="mb-6 slide-up" style="animation-delay: 0.1s; animation-fill-mode: both;">
+            <h2 class="font-bold text-gray-700 mb-2 text-[10px] uppercase tracking-widest flex justify-between items-end">
+                <span>2 · Klistra in varukorg</span>
+                <button onclick="toggleManual()" class="text-blue-600 font-bold lowercase text-[10px]"><i class="fa-solid fa-plus"></i> Egen vara</button>
+            </h2>
+            <textarea id="importText" placeholder="Klistra in ordern från IKEA här..." class="w-full h-[100px] p-4 rounded-2xl border-2 border-dashed border-gray-300 outline-none text-xs bg-white resize-none focus:border-blue-400 focus:bg-blue-50/30 transition-all"></textarea>
+            <button onclick="parseOrderText()" class="mt-2 w-full ikea-blue py-3.5 rounded-xl font-bold text-sm shadow-md flex items-center justify-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Analysera text
             </button>
             
-            <details class="mt-4 group">
-                <summary class="text-xs font-bold text-gray-500 cursor-pointer list-none flex items-center gap-2 hover:text-gray-800 transition-colors">
-                    <i class="fa-solid fa-plus-circle text-gray-400 group-open:rotate-45 transition-transform"></i> Lägg till manuellt kolli
-                </summary>
-                <div class="grid grid-cols-4 gap-2 mt-3 p-3 bg-gray-100 rounded-xl">
-                    <input id="customL" type="number" placeholder="L (cm)" class="p-2 border rounded-lg text-xs outline-none focus:border-blue-500">
-                    <input id="customW" type="number" placeholder="B (cm)" class="p-2 border rounded-lg text-xs outline-none focus:border-blue-500">
-                    <input id="customH" type="number" placeholder="H (cm)" class="p-2 border rounded-lg text-xs outline-none focus:border-blue-500">
-                    <button onclick="addCustomProduct()" class="bg-gray-800 text-white rounded-lg font-bold text-xs hover:bg-gray-700 cursor-pointer">Lägg till</button>
+            <!-- Manuellt inmatningsfält (Dolt som standard) -->
+            <div id="manualInput" class="hidden mt-3 p-3 bg-white border border-gray-200 rounded-xl shadow-sm slide-up">
+                <div class="grid grid-cols-4 gap-2">
+                    <input id="customL" type="number" placeholder="L (cm)" class="p-2 border rounded-lg text-xs outline-none bg-gray-50 focus:bg-white">
+                    <input id="customW" type="number" placeholder="B (cm)" class="p-2 border rounded-lg text-xs outline-none bg-gray-50 focus:bg-white">
+                    <input id="customH" type="number" placeholder="H (cm)" class="p-2 border rounded-lg text-xs outline-none bg-gray-50 focus:bg-white">
+                    <button onclick="addCustomProduct()" class="bg-slate-800 text-white rounded-lg font-bold text-xs"><i class="fa-solid fa-check"></i></button>
                 </div>
-            </details>
+            </div>
         </div>
-    </section>
 
-    <section class="w-full md:w-7/12 bg-white p-6 flex flex-col overflow-y-auto border-t md:border-t-0 relative">
-        <div class="flex justify-between items-end mb-4 shrink-0">
-            <h2 class="font-bold text-gray-800 text-xl">Din Plocklista</h2>
-            <div class="flex gap-2">
-                <span id="weightCount" class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-1.5 rounded-lg hidden"></span>
-                <span id="itemCount" class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1.5 rounded-lg">0 kollin</span>
+        <!-- 3. Plocklista -->
+        <div class="slide-up" style="animation-delay: 0.15s; animation-fill-mode: both;">
+            <div class="flex justify-between items-end mb-3">
+                <h2 class="font-bold text-gray-700 text-[10px] uppercase tracking-widest">Din Plocklista</h2>
+                <div class="flex gap-2">
+                    <span id="weightCount" class="bg-gray-200 text-gray-600 text-[10px] font-bold px-2 py-1 rounded hidden"></span>
+                    <span id="itemCount" class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-1 rounded">0 kollin</span>
+                </div>
             </div>
-        </div>
-        
-        <div class="flex-1 overflow-y-auto pr-1 relative min-h-[200px]">
-            <ul id="shoppingList" class="space-y-2 relative z-10 empty:hidden"></ul>
             
-            <div id="emptyListMsg" class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 bg-white z-0">
-                <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-3"><i class="fa-solid fa-box-open text-2xl text-gray-300"></i></div>
-                <h3 class="text-sm font-bold text-gray-700">Skuffen ekar tom</h3>
-                <p class="text-[11px] text-gray-400 mt-1 max-w-[220px]">Klistra in din order från IKEA. Systemet matchar exakta emballagemått och skapar en 3D-plan.</p>
+            <ul id="shoppingList" class="space-y-2 empty:hidden"></ul>
+            
+            <div id="emptyListMsg" class="flex flex-col items-center justify-center text-center p-6 bg-white rounded-2xl border border-gray-100 border-dashed">
+                <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-2">
+                    <i class="fa-solid fa-box-open text-xl text-gray-300"></i>
+                </div>
+                <p class="text-[11px] text-gray-400 max-w-[200px]">Listan är tom. Skanna in dina varor för att bygga 3D-planen.</p>
             </div>
         </div>
-        
-        <div class="pt-4 mt-auto shrink-0 bg-white">
-            <button id="clearBtn" onclick="clearList()" class="w-full mb-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold py-2 rounded-xl text-xs transition-colors hidden cursor-pointer">Rensa listan</button>
-            <button id="calcBtn" onclick="calculateFit()" disabled class="w-full bg-slate-900 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl hover:bg-slate-800 transition-all text-base flex items-center justify-center gap-2 cursor-pointer"><i class="fa-solid fa-route"></i> Generera Packplan</button>
-        </div>
-    </section>
+    </main>
+
+    <!-- Fastklistrad Botten-meny -->
+    <div class="fixed bottom-0 left-0 right-0 p-5 bg-white/80 backdrop-blur-md border-t border-gray-200 z-20 shadow-[0_-10px_20px_rgba(0,0,0,0.02)]">
+        <button id="calcBtn" onclick="calculateFit()" disabled class="w-full bg-slate-900 disabled:bg-slate-300 disabled:text-slate-500 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-[0.98] transition-all text-sm flex items-center justify-center gap-2">
+            <i class="fa-solid fa-route"></i> Generera Packplan i 3D
+        </button>
+    </div>
 </div>
 
-<div id="resultModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-0 md:p-5 z-[100] opacity-0 transition-opacity duration-300">
-    <div class="bg-white md:rounded-[2rem] p-4 md:p-6 w-full max-w-7xl flex flex-col md:flex-row gap-5 h-screen md:h-[94vh] relative overflow-hidden shadow-2xl">
-        <button onclick="closeModal()" class="no-print absolute top-4 right-4 w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full z-50 transition-colors cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
-        
-        <div class="w-full md:w-[42%] flex flex-col overflow-y-auto pr-2 mt-12 md:mt-0 relative pb-16 md:pb-0">
-            <div class="flex items-center gap-4 mb-5 shrink-0">
-                <div id="resultIcon" class="w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-sm shrink-0"></div>
-                <div><h2 id="resultTitle" class="text-xl md:text-2xl font-extrabold text-gray-900 leading-tight tracking-tight"></h2><p id="resultSubtitle" class="text-[11px] md:text-xs text-gray-500 font-medium mt-0.5"></p></div>
-            </div>
-            
-            <!-- Freetrailer Banner -->
-            <div id="trailerBanner" class="hidden flex-col gap-3 mb-5 bg-amber-50 border border-amber-200 rounded-xl p-4 shadow-sm shrink-0 no-print">
-                <div class="flex gap-3">
-                    <i class="fa-solid fa-trailer text-amber-500 text-xl mt-0.5"></i>
-                    <div>
-                        <strong class="text-sm text-amber-900">Behöver du mer plats?</strong>
-                        <p id="trailerReason" class="text-[11px] text-amber-800 mt-1"></p>
-                        <div class="mt-3">
-                            <a href="https://freetrailer.com/se/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center justify-center bg-amber-500 hover:bg-amber-600 text-white px-4 py-2.5 rounded-lg text-[11px] font-bold transition-colors shadow-sm">
-                                <i class="fa-solid fa-arrow-up-right-from-square mr-2"></i> Låna ett gratis släp (Freetrailer)
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="no-print"><h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Välj Baksäteskonfiguration</h3></div>
-            <div id="planTabs" class="bg-gray-50 p-1.5 rounded-xl flex flex-col gap-1 mb-4 border border-gray-100 shrink-0 no-print"></div>
-            
-            <div class="bg-blue-50 border border-blue-100 rounded-xl p-3.5 text-[11px] md:text-xs text-blue-900 leading-relaxed mb-4 shrink-0 shadow-sm"><span id="resultDesc"></span></div>
-            
-            <div class="grid grid-cols-2 gap-3 mb-5 shrink-0 no-print">
-                <div class="border border-gray-100 rounded-xl p-3 bg-white shadow-sm">
-                    <div class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Total Vikt</div>
-                    <div id="statWeight" class="font-extrabold text-gray-800 text-sm md:text-base mt-1"></div>
-                    <div class="h-1.5 bg-gray-100 rounded-full mt-2 overflow-hidden"><div id="weightBar" class="h-full rounded-full transition-all duration-700"></div></div>
-                </div>
-                <div class="border border-gray-100 rounded-xl p-3 bg-white shadow-sm">
-                    <div class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Volym</div>
-                    <div id="statVolume" class="font-extrabold text-gray-800 text-sm md:text-base mt-1"></div>
-                    <div class="h-1.5 bg-gray-100 rounded-full mt-2 overflow-hidden"><div id="volumeBar" class="h-full bg-blue-500 rounded-full transition-all duration-700"></div></div>
+<!-- RESULTATVY (App Split-screen) -->
+<div id="resultModal" class="fixed inset-0 bg-white hidden flex-col z-[100] h-screen min-h-[100dvh] transform translate-y-full transition-transform duration-300 ease-out">
+    
+    <!-- Övre halvan: 3D Vy -->
+    <div class="relative h-[45vh] bg-slate-100 shrink-0 border-b border-gray-200">
+        <!-- Tillbaka-knapp -->
+        <button onclick="closeModal()" class="absolute top-12 left-4 w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md z-30 flex items-center justify-center text-slate-700 active:scale-90 transition-transform">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        
+        <!-- Kamerapositioner -->
+        <div class="absolute top-12 right-4 z-30 flex flex-col gap-1.5">
+            <button class="view-btn active:bg-gray-100" onclick="setView('rear')">Bak</button>
+            <button class="view-btn active:bg-gray-100" onclick="setView('side')">Sida</button>
+            <button class="view-btn active:bg-gray-100" onclick="resetCamera()"><i class="fa-solid fa-rotate"></i></button>
+        </div>
+
+        <!-- 3D Canvas -->
+        <div id="canvasContainer" class="absolute inset-0 z-10"></div>
+        
+        <!-- Info Toast (Mitten) -->
+        <div class="absolute top-12 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur px-3 py-1.5 rounded-full text-[9px] font-bold shadow-sm z-20 flex items-center gap-1.5 pointer-events-none">
+            <span class="inline-block w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> Interaktiv 3D
+        </div>
+
+        <!-- Info Card för klickade lådor -->
+        <div id="boxInfoCard" class="absolute bottom-4 left-4 right-4 bg-white/95 backdrop-blur-md p-3 rounded-2xl shadow-xl z-30 hidden slide-up border border-gray-100">
+            <div class="flex justify-between items-start mb-1">
+                <span class="text-[9px] uppercase font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Markerat Kolli</span>
+                <button onclick="document.getElementById('boxInfoCard').classList.add('hidden')" class="text-gray-400 p-1"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <h4 id="cardTitle" class="font-bold text-gray-900 text-xs truncate"></h4>
+            <div id="cardSpecs" class="text-[10px] text-gray-500 mt-0.5"></div>
+        </div>
+    </div>
+
+    <!-- Nedre halvan: Info & Lista -->
+    <div class="flex-1 overflow-y-auto bg-white p-5 pb-8">
+        
+        <div class="flex items-center gap-4 mb-5 shrink-0">
+            <div id="resultIcon" class="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-sm shrink-0"></div>
+            <div>
+                <h2 id="resultTitle" class="text-xl font-extrabold text-gray-900 tracking-tight leading-none mb-1"></h2>
+                <p id="resultSubtitle" class="text-[11px] text-gray-500 font-medium"></p>
+            </div>
+        </div>
+
+        <!-- Freetrailer Banner -->
+        <div id="trailerBanner" class="hidden flex-col gap-2 mb-5 bg-amber-50 border border-amber-200 rounded-2xl p-4">
+            <div class="flex gap-3">
+                <i class="fa-solid fa-trailer text-amber-500 text-lg mt-0.5"></i>
+                <div>
+                    <strong class="text-xs text-amber-900">Behöver du mer plats?</strong>
+                    <p id="trailerReason" class="text-[10px] text-amber-800 mt-0.5"></p>
+                    <a href="https://freetrailer.com/se/" target="_blank" rel="noopener noreferrer" class="mt-2 inline-flex items-center justify-center bg-amber-500 text-white px-3 py-2 rounded-lg text-[10px] font-bold active:scale-95 transition-transform shadow-sm">
+                        Boka ett gratis släp <i class="fa-solid fa-arrow-up-right-from-square ml-1.5"></i>
+                    </a>
                 </div>
             </div>
-            
-            <div id="packingSteps" class="flex-1"></div>
-            
-            <div class="no-print mt-auto pt-4 flex gap-3 border-t border-gray-100 bg-white sticky bottom-0 z-20 shrink-0">
-                <button onclick="triggerPrint()" class="flex-1 py-3 rounded-xl border-2 border-gray-200 hover:bg-gray-50 text-gray-700 font-bold text-xs transition-colors cursor-pointer"><i class="fa-solid fa-print mr-1"></i> Skriv ut packplan</button>
-                <button onclick="closeModal()" class="flex-1 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-colors cursor-pointer">Stäng vy</button>
+        </div>
+
+        <div id="planTabs" class="bg-gray-50 p-1 rounded-xl flex flex-col gap-1 mb-4"></div>
+        
+        <div class="bg-blue-50/50 border border-blue-100 rounded-xl p-3 text-[11px] text-blue-900 mb-5 leading-relaxed">
+            <span id="resultDesc"></span>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <div class="border border-gray-100 rounded-2xl p-3 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+                <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Total Vikt</div>
+                <div id="statWeight" class="font-extrabold text-gray-800 text-sm mt-0.5"></div>
+                <div class="h-1.5 bg-gray-100 rounded-full mt-2"><div id="weightBar" class="h-full rounded-full"></div></div>
+            </div>
+            <div class="border border-gray-100 rounded-2xl p-3 shadow-[0_2px_10px_rgba(0,0,0,0.02)]">
+                <div class="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Fyllnadsgrad</div>
+                <div id="statVolume" class="font-extrabold text-gray-800 text-sm mt-0.5"></div>
+                <div class="h-1.5 bg-gray-100 rounded-full mt-2"><div id="volumeBar" class="h-full bg-blue-500 rounded-full"></div></div>
             </div>
         </div>
         
-        <div class="w-full md:w-[58%] bg-gray-50 md:rounded-2xl border border-gray-200 overflow-hidden relative flex-1 min-h-[400px] shadow-inner print-break">
-            <div class="absolute top-3 left-3 right-3 z-20 flex justify-between items-start pointer-events-none no-print">
-                <div class="bg-white/95 backdrop-blur-sm rounded-lg px-2.5 py-1.5 text-[9px] font-bold shadow-sm text-gray-700 border border-gray-200 flex items-center gap-1.5"><span class="inline-block w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span><span>3D Interiör · Klicka på en låda</span></div>
-                <div class="flex gap-1 pointer-events-auto">
-                    <button class="view-btn" onclick="setView('rear')">Bak</button>
-                    <button class="view-btn hidden md:block" onclick="setView('side')">Sida</button>
-                    <button class="view-btn hidden md:block" onclick="setView('top')">Ovan</button>
-                    <button class="view-btn bg-slate-900 !text-white !border-slate-900" onclick="resetCamera()"><i class="fa-solid fa-rotate"></i> 3D</button>
-                </div>
-            </div>
-            
-            <div id="boxInfoCard" class="absolute bottom-16 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-gray-200 z-30 hidden slide-up pointer-events-auto no-print">
-                <div class="flex justify-between items-start mb-1">
-                    <span id="cardCategory" class="text-[9px] uppercase font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Markerat Kolli</span>
-                    <button onclick="document.getElementById('boxInfoCard').classList.add('hidden')" class="text-gray-400 hover:text-gray-700 text-xs cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-                <h4 id="cardTitle" class="font-bold text-gray-900 text-xs mt-1"></h4>
-                <div id="cardSpecs" class="text-[10px] text-gray-500 mt-1 font-medium"></div>
-                <div id="cardLinkContainer" class="mt-3 pt-2 border-t border-gray-100 flex justify-between items-center"></div>
-            </div>
-
-            <div id="canvasContainer" class="absolute inset-0"></div>
+        <div class="flex items-center gap-2 mb-3">
+            <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Packordning</h3>
+            <span class="bg-gray-100 text-gray-500 text-[9px] px-2 py-0.5 rounded-full font-bold">Lasta tyngst först</span>
         </div>
+        
+        <div id="packingSteps"></div>
     </div>
 </div>
 
 <script>
-// OFFICIell IKEA databas
+// OFFiciell IKEA databas
 const officialIkeaDatabase = {
     "402.119.77": { name: "PAX Garderobsstomme", l: 209, w: 38, h: 8, weight: 29 },
     "403.910.92": { name: "FORSAND Dörr (50x195)", l: 195, w: 52, h: 4, weight: 12 },
     "204.236.02": { name: "FORSAND Dörr (25x195)", l: 195, w: 27, h: 4, weight: 6 },
-    "002.145.05": { name: "KOMPLEMENT gångjärn", l: 15, w: 10, h: 5, weight: 0.5 },
+    "002.145.05": { name: "KOMPLEMENT mjukstängande gångjärn", l: 15, w: 10, h: 5, weight: 0.5 },
     "503.343.17": { name: "BILLSBRO handtag", l: 55, w: 5, h: 3, weight: 0.3 },
     "602.632.44": { name: "KOMPLEMENT utdragsskena", l: 38, w: 5, h: 4, weight: 0.8 },
     "102.573.11": { name: "KOMPLEMENT meshback", l: 69, w: 34, h: 17, weight: 1.18 },
@@ -224,19 +211,7 @@ const officialIkeaDatabase = {
     "702.779.95": { name: "KOMPLEMENT hyllplan", l: 73, w: 35, h: 2, weight: 3.5 },
     "205.894.85": { name: "ÖVERSIDAN LED ljuslist", l: 75, w: 5, h: 3, weight: 0.5 },
     "503.561.87": { name: "TRÅDFRI driver", l: 15, w: 10, h: 5, weight: 0.4 },
-    "504.468.81": { name: "FÖRNIMMA anslutningssladd", l: 20, w: 15, h: 5, weight: 0.3 },
-    // Lägger till BRIMNES och HAVSTA för perfekt kompatibilitet ifall de inte skrapas rätt
-    "404.079.22": [ // BRIMNES Garderob (3 paket)
-        { name: "BRIMNES Garderob (Paket 1/3)", l: 195, w: 52, h: 6, weight: 30 },
-        { name: "BRIMNES Garderob (Paket 2/3)", l: 189, w: 52, h: 6, weight: 30 },
-        { name: "BRIMNES Garderob (Paket 3/3)", l: 161, w: 52, h: 6, weight: 25 }
-    ],
-    "105.994.80": [ // HAVSTA Byrå (3 paket)
-        { name: "HAVSTA Byrå (Paket 1/3)", l: 121, w: 49, h: 11, weight: 25 },
-        { name: "HAVSTA Byrå (Paket 2/3)", l: 125, w: 49, h: 9, weight: 22 },
-        { name: "HAVSTA Byrå (Paket 3/3)", l: 125, w: 58, h: 7, weight: 21 }
-    ],
-    "400.337.63": { name: "IVAR Skåp", l: 87, w: 41, h: 18, weight: 20 }
+    "504.468.81": { name: "FÖRNIMMA anslutningssladd", l: 20, w: 15, h: 5, weight: 0.3 }
 };
 
 const carDatabase = {
@@ -252,94 +227,34 @@ const boxColors = [0x3b82f6, 0xef4444, 0x10b981, 0xf59e0b, 0x8b5cf6, 0xec4899, 0
 let currentList = [], globalResults = {}, currentResult = null;
 let scene, camera, renderer, controls, mainGroup, raycaster, mouse, selectedMesh = null;
 
-// BIL-HANTERING
-const carSelect = document.getElementById('carSelect');
-
-function handleCarSelect() {
-    if (carSelect.value === 'add_custom') {
-        document.getElementById('customCarForm').classList.remove('hidden');
-        document.getElementById('carSpecs').classList.add('hidden');
-        document.getElementById('calcBtn').disabled = true;
-    } else {
-        document.getElementById('customCarForm').classList.add('hidden');
-        document.getElementById('carSpecs').classList.remove('hidden');
-        updateCarInfo();
-    }
-}
-
 function updateCarInfo() {
     const c = carDatabase[carSelect.value];
-    if(c) {
-        document.getElementById('carSpecs').innerHTML = `<strong>${c.name}</strong><br>Maxlängd (fällt): ${c.maxL} cm. Max till panel: ${c.centerL} cm.<br>Minsta bredd: ${c.w} cm. Maxlast: ${c.maxW} kg.`;
-    }
+    carSpecs.innerHTML = `<strong>${c.name}</strong><br>Maxlängd (fällt): ${c.maxL} cm. Max till panel: ${c.centerL} cm.<br>Minsta bredd: ${c.w} cm. Maxlast: ${c.maxW} kg.`;
     checkState();
-}
-
-function saveCustomCar() {
-    const name = document.getElementById('ccName').value;
-    const maxL = parseInt(document.getElementById('ccL').value);
-    const w = parseInt(document.getElementById('ccW').value);
-    const h = parseInt(document.getElementById('ccH').value);
-    const maxW = parseInt(document.getElementById('ccMaxW').value);
-
-    if(!name || !maxL || !w || !h || !maxW) {
-        return toast('Vänligen fyll i alla bilens mått.');
-    }
-
-    const id = 'custom_' + Date.now();
-    carDatabase[id] = {
-        name: name + ' (Egen)',
-        trunkL: Math.round(maxL * 0.55),
-        maxL: maxL,
-        centerL: maxL + 50,
-        w: w,
-        h: h,
-        maxW: maxW
-    };
-
-    // Lägg till i listan strax före "Lägg till egen bil..."
-    const opt = document.createElement('option');
-    opt.value = id;
-    opt.textContent = carDatabase[id].name;
-    carSelect.insertBefore(opt, carSelect.options[carSelect.options.length - 2]);
-    
-    carSelect.value = id;
-
-    // Rensa fält
-    document.getElementById('ccName').value = '';
-    document.getElementById('ccL').value = '';
-    document.getElementById('ccW').value = '';
-    document.getElementById('ccH').value = '';
-    document.getElementById('ccMaxW').value = '';
-    
-    handleCarSelect();
-    toast('Din anpassade bil lades till!', true);
-}
-
-function cancelCustomCar() {
-    carSelect.value = 'vw_passat_b8_2017'; // Återgå till standard
-    handleCarSelect();
 }
 
 function toast(msg, ok=false) {
     const e = document.createElement('div');
-    e.className = `fixed top-6 left-1/2 -translate-x-1/2 z-[200] px-5 py-2.5 rounded-full text-white text-[11px] font-bold shadow-xl slide-up flex items-center gap-2 ${ok ? 'bg-green-600' : 'bg-slate-800'}`;
+    e.className = `fixed top-12 left-1/2 -translate-x-1/2 z-[200] px-4 py-2.5 rounded-full text-white text-[11px] font-bold shadow-xl slide-up flex items-center gap-2 ${ok ? 'bg-emerald-500' : 'bg-slate-800'}`;
     e.innerHTML = `<i class="fa-solid ${ok ? 'fa-check' : 'fa-info-circle'}"></i> ${msg}`;
     document.body.appendChild(e);
-    setTimeout(() => { e.style.opacity = '0'; setTimeout(() => e.remove(), 300); }, 3500);
+    setTimeout(() => { e.style.opacity = '0'; setTimeout(() => e.remove(), 300); }, 3000);
+}
+
+function toggleManual() {
+    const el = document.getElementById('manualInput');
+    el.classList.toggle('hidden');
 }
 
 function checkState() {
-    const valid = carSelect.value && carSelect.value !== 'add_custom' && currentList.length > 0;
-    document.getElementById('calcBtn').disabled = !valid;
-    document.getElementById('clearBtn').style.display = currentList.length > 0 ? 'block' : 'none';
+    const valid = carSelect.value && currentList.length > 0;
+    calcBtn.disabled = !valid;
 }
 function clearList() { currentList = []; renderList(); }
 function escapeHtml(s) { return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
 
-// SKRAPAREN / PARSERN
 function parseOrderText() {
-    const text = document.getElementById('importText').value;
+    const text = importText.value;
     if (!text.trim()) return toast('Klistra in orderbekräftelsen först.');
     
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
@@ -347,9 +262,7 @@ function parseOrderText() {
     
     let currentItem = { nameParts: [], dim: null, weight: null, artNo: null };
     let expectingCount = false;
-    
-    // Ignorera menyer etc.
-    const skipRegex = /^(hoppa till|sv|kundservice|varukorg|kassa|logga in|meny|sök|följ oss|dina varor|letar du efter|utloggad|\d{3}\s?\d{2})/i;
+    const skipRegex = /^(hoppa till|sv|kundservice|varukorg|kassa|logga in|meny|sök|följ oss|dina varor|letar du efter|utloggad|totalt|\d{3}\s?\d{2})/i;
 
     for (let i = 0; i < lines.length; i++) {
         let line = lines[i];
@@ -409,44 +322,25 @@ function parseOrderText() {
         if (!name) name = "IKEA Artikel";
         if (currentItem.artNo) name += ` (${currentItem.artNo})`;
 
-        let rawArtNo = currentItem.artNo ? currentItem.artNo.replace(/\./g, '') : null;
-        let formattedArtNo = currentItem.artNo;
+        let l = 25, w = 20, h = 10;
+        
+        if (currentItem.artNo && officialIkeaDatabase[currentItem.artNo]) {
+            let official = officialIkeaDatabase[currentItem.artNo];
+            l = official.l; w = official.w; h = official.h; 
+            currentItem.weight = official.weight;
+            name = official.name + ` (${currentItem.artNo})`;
+        } else if (currentItem.dim) { 
+            l = currentItem.dim.l; w = currentItem.dim.w; h = currentItem.dim.h; 
+        }
+        
+        let weight = currentItem.weight || Math.max(1, Math.round((l * w * h) / 5000));
+        if (count > 1 && weight > 40 && !officialIkeaDatabase[currentItem.artNo]) {
+            weight = Math.round(weight / count); 
+        }
 
-        // Om varan finns som Multi-Paket (Array) i databasen
-        if (formattedArtNo && Array.isArray(officialIkeaDatabase[formattedArtNo])) {
-            let packages = officialIkeaDatabase[formattedArtNo];
-            for (let k = 0; k < count; k++) {
-                packages.forEach(pkg => {
-                    currentList.push({ 
-                        name: pkg.name, l: pkg.l, w: pkg.w, h: pkg.h, weight: pkg.weight, 
-                        artNo: formattedArtNo, color: boxColors[currentList.length % boxColors.length] 
-                    });
-                    itemsAdded++;
-                });
-            }
-        } 
-        // Om varan finns som Singel-Paket i databasen
-        else if (formattedArtNo && officialIkeaDatabase[formattedArtNo]) {
-            let official = officialIkeaDatabase[formattedArtNo];
-            for (let k = 0; k < count; k++) {
-                currentList.push({ 
-                    name: official.name + ` (${formattedArtNo})`, l: official.l, w: official.w, h: official.h, weight: official.weight, 
-                    artNo: formattedArtNo, color: boxColors[currentList.length % boxColors.length] 
-                });
-                itemsAdded++;
-            }
-        } 
-        // Okänd vara
-        else {
-            let l = 25, w = 20, h = 10;
-            if (currentItem.dim) { l = currentItem.dim.l; w = currentItem.dim.w; h = currentItem.dim.h; }
-            let weight = currentItem.weight || Math.max(1, Math.round((l * w * h) / 5000));
-            if (count > 1 && weight > 40) weight = Math.round(weight / count); 
-
-            for (let k = 0; k < count; k++) {
-                currentList.push({ name, l, w, h, weight, artNo: formattedArtNo, color: boxColors[currentList.length % boxColors.length] });
-                itemsAdded++;
-            }
+        for (let k = 0; k < count; k++) {
+            currentList.push({ name, l, w, h, weight, artNo: currentItem.artNo, color: boxColors[currentList.length % boxColors.length] });
+            itemsAdded++;
         }
 
         currentItem = { nameParts: [], dim: null, weight: null, artNo: null };
@@ -454,54 +348,48 @@ function parseOrderText() {
     }
 
     if (itemsAdded > 0) {
-        document.getElementById('importText').value = '';
+        importText.value = '';
         renderList();
         toast(`Analys klar! Lade till ${itemsAdded} kollin.`, true);
     } else {
-        toast('Kunde inte tyda ordern. Kontrollera texten.');
+        toast('Kunde inte tyda texten.');
     }
 }
 
 function addCustomProduct() {
-    const l = +document.getElementById('customL').value;
-    const w = +document.getElementById('customW').value;
-    const h = +document.getElementById('customH').value;
+    const l = +customL.value, w = +customW.value, h = +customH.value;
     if (!(l > 0 && w > 0 && h > 0)) return toast('Fyll i alla mått (L, B, H).');
     let weight = Math.max(2, Math.round(l*w*h/5000));
     currentList.push({ name: `Manuellt Kolli (${l}×${w}×${h})`, l, w, h, weight, artNo: "", color: boxColors[currentList.length % boxColors.length] });
     renderList();
-    document.getElementById('customL').value = '';
-    document.getElementById('customW').value = '';
-    document.getElementById('customH').value = '';
+    customL.value = customW.value = customH.value = '';
+    toggleManual();
 }
 
 function removeProduct(i) { currentList.splice(i, 1); renderList(); }
 
 function renderList() {
-    const shoppingList = document.getElementById('shoppingList');
     shoppingList.innerHTML = '';
-    document.getElementById('itemCount').textContent = `${currentList.length} kollin`;
+    itemCount.textContent = `${currentList.length} kollin`;
     let tw = currentList.reduce((s, x) => s + x.weight, 0);
-    document.getElementById('weightCount').textContent = `${Math.round(tw)} kg`;
-    document.getElementById('weightCount').classList.toggle('hidden', !tw);
-    document.getElementById('emptyListMsg').style.display = currentList.length ? 'none' : 'flex';
+    weightCount.textContent = `${Math.round(tw)} kg`;
+    weightCount.classList.toggle('hidden', !tw);
+    emptyListMsg.style.display = currentList.length ? 'none' : 'flex';
     
     currentList.forEach((x, i) => {
-        let ikeaSearchUrl = x.artNo ? `https://www.ikea.com/se/sv/search/?q=${x.artNo}` : `https://www.ikea.com/se/sv/search/?q=${encodeURIComponent(x.name)}`;
         const li = document.createElement('div');
-        li.className = 'flex items-center justify-between p-2.5 border border-gray-100 rounded-xl shadow-sm bg-white slide-up';
+        li.className = 'flex items-center justify-between p-3 border border-gray-100 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.02)] bg-white slide-up';
         li.innerHTML = `
             <div class="flex items-center gap-3 min-w-0">
-                <div class="w-9 h-9 rounded-lg flex items-center justify-center text-white shrink-0 shadow-inner" style="background:#${x.color.toString(16).padStart(6, '0')}"><i class="fa-solid fa-box text-xs"></i></div>
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0 shadow-inner" style="background:#${x.color.toString(16).padStart(6, '0')}">
+                    <i class="fa-solid fa-box text-sm"></i>
+                </div>
                 <div class="min-w-0">
-                    <div class="flex items-center gap-2">
-                        <strong class="text-[11px] text-gray-800 truncate" title="${escapeHtml(x.name)}">${escapeHtml(x.name)}</strong>
-                        <a href="${ikeaSearchUrl}" target="_blank" rel="noopener noreferrer" title="Visa på IKEA.com" class="text-blue-600 hover:text-blue-800 text-[10px]"><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
-                    </div>
-                    <div class="text-[9px] text-gray-500 font-medium mt-0.5">Emballage: ${x.l}×${x.w}×${x.h} cm · ${x.weight} kg</div>
+                    <strong class="text-[11px] text-gray-800 block truncate" title="${escapeHtml(x.name)}">${escapeHtml(x.name)}</strong>
+                    <div class="text-[10px] text-gray-500 font-medium mt-0.5">${x.l}×${x.w}×${x.h} cm · ${x.weight} kg</div>
                 </div>
             </div>
-            <button onclick="removeProduct(${i})" class="w-7 h-7 rounded-full text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0 cursor-pointer"><i class="fa-solid fa-xmark"></i></button>`;
+            <button onclick="removeProduct(${i})" class="w-8 h-8 rounded-full text-gray-300 hover:text-red-500 hover:bg-red-50 transition-colors shrink-0 flex items-center justify-center active:scale-90"><i class="fa-solid fa-xmark"></i></button>`;
         shoppingList.appendChild(li);
     });
     checkState();
@@ -509,9 +397,9 @@ function renderList() {
 
 function orientations(it) {
     return [
-        { w: it.w, h: it.h, l: it.l, rot: 'Liggande platt' }, { w: it.l, h: it.h, l: it.w, rot: 'Liggande på tvären' },
-        { w: it.h, h: it.w, l: it.l, rot: 'På högkant' }, { w: it.h, h: it.l, l: it.w, rot: 'På högkant tvärs' },
-        { w: it.w, h: it.l, l: it.h, rot: 'Stående upp' }, { w: it.l, h: it.w, l: it.h, rot: 'Stående tvärs' }
+        { w: it.w, h: it.h, l: it.l, rot: 'Liggande' }, { w: it.l, h: it.h, l: it.w, rot: 'Liggande tvärs' },
+        { w: it.h, h: it.w, l: it.l, rot: 'Högkant' }, { w: it.h, h: it.l, l: it.w, rot: 'Högkant tvärs' },
+        { w: it.w, h: it.l, l: it.h, rot: 'Stående' }, { w: it.l, h: it.w, l: it.h, rot: 'Stående tvärs' }
     ];
 }
 
@@ -522,6 +410,7 @@ function obstacles(car, mode) {
     } else if (mode === 'split') {
         o.push({ x: 0, y: 0, z: car.trunkL, w: car.w * 0.48, h: car.h, l: car.centerL - car.trunkL, name: 'Baksäte Hälft' });
     }
+
     const frontSeatZ = car.maxL;
     const exactCorridor = 26;
     const seatW = (car.w - exactCorridor) / 2;
@@ -529,6 +418,7 @@ function obstacles(car, mode) {
     o.push({ x: 0, y: 0, z: frontSeatZ, w: seatW, h: car.h, l: car.centerL - frontSeatZ, name: 'Förarsäte' });
     o.push({ x: car.w - seatW, y: 0, z: frontSeatZ, w: seatW, h: car.h, l: car.centerL - frontSeatZ, name: 'Passagerarsäte' });
     o.push({ x: car.w/2 - 15, y: car.h * 0.4, z: car.centerL - 10, w: 30, h: car.h * 0.6, l: 15, name: 'Instrumentpanel' });
+
     return o;
 }
 
@@ -541,6 +431,7 @@ function validPos(x, y, z, w, h, l, car, mode, placed) {
     
     for (const o of obstacles(car, mode)) if (intersect({ x, y, z, w, h, l }, o)) return false;
     for (const p of placed) if (intersect({ x, y, z, w, h, l }, p)) return false;
+    
     return true; 
 }
 
@@ -593,6 +484,7 @@ function packItems(car, items, mode) {
             for (let y = 0; y <= car.h - o.h; y += step) {
                 if (done) break;
                 let requiresSupport = y > 0;
+
                 for (let z = 0; z <= car.centerL - o.l; z += step) {
                     if (done) break;
                     for (const x of xCandidates) {
@@ -622,13 +514,12 @@ function packItems(car, items, mode) {
     return { placed, unplaced, mode };
 }
 
-
 function calculateFit() {
     const car = carDatabase[carSelect.value];
     const modes = [
-        ['center', 'Mellan stolar', 'Långa kollin skjuts in på högkant i 26cm-korridoren mellan framsätena.'],
-        ['flat', 'Fällt baksäte', 'Hela baksätet fälls platt (Max fram till stolarna).'],
-        ['split', 'Delat baksäte', 'Ena halvan av baksätet fälls platt för långa föremål.'],
+        ['center', 'Mellan stolar', 'Långa kollin i mittgången.'],
+        ['flat', 'Fällt baksäte', 'Hela baksätet fälls platt.'],
+        ['split', 'Delat baksäte', 'Ena halvan av baksätet fälls platt.'],
         ['trunk', 'Bara skuff', 'Hela baksätet står uppfällt.']
     ];
     globalResults = {}; let best = 'center', success = false;
@@ -643,9 +534,13 @@ function calculateFit() {
         best = Object.keys(globalResults).sort((a, b) => globalResults[b].placed.length - globalResults[a].placed.length)[0];
     }
     
-    const resultModal = document.getElementById('resultModal');
-    resultModal.style.display = 'flex';
-    requestAnimationFrame(() => resultModal.style.opacity = '1');
+    const modal = document.getElementById('resultModal');
+    modal.classList.remove('hidden');
+    // Minimal timeout for CSS transition
+    setTimeout(() => {
+        modal.classList.remove('translate-y-full');
+    }, 10);
+    
     renderResult(best, car);
 }
 
@@ -658,7 +553,7 @@ function renderResult(mode, car) {
     const all = !r.unplaced.length && !over;
     
     document.getElementById('resultTitle').textContent = all ? 'Packplan Klar!' : (over ? 'Viktvarning' : 'Utrymmesbrist');
-    document.getElementById('resultSubtitle').textContent = over ? `Maxlasten överskrids med ${Math.round(tw - car.maxW)} kg.` : (r.unplaced.length ? `${r.unplaced.length} kolli får inte plats i bilen.` : 'Följ guiden nedan för att lasta.');
+    document.getElementById('resultSubtitle').textContent = over ? `Maxlasten överskrids med ${Math.round(tw - car.maxW)} kg.` : (r.unplaced.length ? `${r.unplaced.length} kolli ryms ej.` : 'Följ guiden nedan.');
     document.getElementById('resultIcon').className = 'w-12 h-12 rounded-xl flex items-center justify-center text-xl shadow-sm shrink-0 ' + (all ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600');
     document.getElementById('resultIcon').innerHTML = `<i class="fa-solid fa-${all ? 'check-double' : 'triangle-exclamation'}"></i>`;
     
@@ -668,9 +563,7 @@ function renderResult(mode, car) {
     if (!all) {
         trailerBanner.classList.remove('hidden');
         trailerBanner.classList.add('flex');
-        trailerReason.textContent = over 
-            ? 'Din last överstiger bilens rekommenderade maxvikt.' 
-            : 'Alla dina varor får tyvärr inte plats i bilen med denna säteskonfiguration.';
+        trailerReason.textContent = over ? 'Din last överstiger bilens maxvikt.' : 'Alla varor får tyvärr inte plats.';
     } else {
         trailerBanner.classList.add('hidden');
         trailerBanner.classList.remove('flex');
@@ -686,7 +579,7 @@ function renderResult(mode, car) {
         planTabs.appendChild(b);
     });
     
-    document.getElementById('resultDesc').innerHTML = `<strong>Valt läge: ${r.meta.name}</strong>. ${r.meta.desc}`;
+    document.getElementById('resultDesc').innerHTML = `<strong>${r.meta.name}:</strong> ${r.meta.desc}`;
     
     const fill = Math.min(100, Math.round(tv / (car.maxL * car.w * car.h) * 100)), wp = Math.min(100, Math.round(tw / car.maxW * 100));
     document.getElementById('statWeight').textContent = `${Math.round(tw)} / ${car.maxW} kg`; 
@@ -696,41 +589,37 @@ function renderResult(mode, car) {
     document.getElementById('volumeBar').style.width = fill + '%';
     
     const packingSteps = document.getElementById('packingSteps');
-    packingSteps.innerHTML = `
-        <div class="flex items-center gap-2 mb-3 mt-5 no-print">
-            <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Steg-för-steg Packordning</h3>
-            <span class="bg-gray-100 text-gray-500 text-[9px] px-2 py-0.5 rounded-full font-bold">Dynamisk fyllnad</span>
-        </div>`;
+    packingSteps.innerHTML = '';
+    const ul = document.createElement('div'); ul.className = 'space-y-2';
     
-    const ul = document.createElement('div'); ul.className = 'space-y-2 pb-4';
     r.placed.forEach((it, i) => {
-        let placementTip = "Längst bak i skuffen (På golvet)";
-        if (it.z > car.trunkL && it.z < car.maxL) placementTip = "Mitt i bagageutrymmet";
-        if (it.z >= car.maxL - 20) placementTip = "Inskjutet i mittgången";
+        let placementTip = "Bak i skuffen";
+        if (it.z >= car.maxL - 20) placementTip = "Inskjutet i fram (Mittgången)";
+        else if (it.z > car.trunkL) placementTip = "Mitt i bilen (Fällda säten)";
         if (it.y > 10) placementTip += " (Ovanpå andra)";
 
         const d = document.createElement('div'); 
-        d.className = 'print-item flex items-center gap-3 border border-gray-100 rounded-xl p-3 bg-white shadow-sm';
+        d.className = 'flex items-center gap-3 border border-gray-100 rounded-xl p-3 bg-white shadow-sm';
         d.innerHTML = `
             <div class="w-6 h-6 rounded bg-gray-50 flex items-center justify-center text-[10px] font-bold text-gray-400 border border-gray-200 shrink-0">${i+1}</div>
-            <div class="w-2.5 h-full self-stretch rounded-full shrink-0" style="background:#${it.color.toString(16).padStart(6, '0')}"></div>
+            <div class="w-2 h-full self-stretch rounded-full shrink-0" style="background:#${it.color.toString(16).padStart(6, '0')}"></div>
             <div class="min-w-0 flex-1">
-                <strong class="text-xs text-gray-800 block truncate" title="${escapeHtml(it.name)}">${escapeHtml(it.name)}</strong>
-                <div class="flex flex-wrap items-center gap-2 mt-0.5">
-                    <span class="text-[10px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-bold">${it.rot}</span>
-                    <span class="text-[10px] text-gray-500 font-medium">${it.weight} kg</span>
-                    <span class="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-medium"><i class="fa-solid fa-location-dot mr-1"></i>${placementTip}</span>
+                <strong class="text-[11px] text-gray-800 block truncate">${escapeHtml(it.name)}</strong>
+                <div class="flex flex-wrap items-center gap-1 mt-0.5">
+                    <span class="text-[9px] bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded font-bold">${it.rot}</span>
+                    <span class="text-[9px] text-gray-500 font-medium">${it.weight} kg</span>
                 </div>
+                <div class="text-[9px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-medium inline-block mt-1"><i class="fa-solid fa-location-dot mr-1"></i>${placementTip}</div>
             </div>`;
         ul.appendChild(d);
     });
     
     if(r.unplaced.length > 0) {
         const unp = document.createElement('div');
-        unp.className = 'print-item mt-3 p-3 bg-red-50 border border-red-100 rounded-xl';
-        unp.innerHTML = `<strong class="text-[11px] text-red-700 block mb-1">Får ej plats (${r.unplaced.length} st):</strong>`;
+        unp.className = 'mt-3 p-3 bg-red-50 border border-red-100 rounded-xl';
+        unp.innerHTML = `<strong class="text-[10px] text-red-700 block mb-1">Får ej plats (${r.unplaced.length} st):</strong>`;
         r.unplaced.forEach(it => {
-            unp.innerHTML += `<div class="text-[10px] text-red-600 truncate mb-0.5">• ${escapeHtml(it.name)}</div>`;
+            unp.innerHTML += `<div class="text-[9px] text-red-600 truncate mb-0.5">• ${escapeHtml(it.name)}</div>`;
         });
         ul.appendChild(unp);
     }
@@ -739,11 +628,10 @@ function renderResult(mode, car) {
     setTimeout(() => { update3D(car, r.placed, mode); }, 50);
 }
 
-function triggerPrint() { window.print(); }
 function closeModal() { 
     const modal = document.getElementById('resultModal');
-    modal.style.opacity = '0'; 
-    setTimeout(() => modal.style.display = 'none', 300); 
+    modal.classList.add('translate-y-full');
+    setTimeout(() => { modal.classList.add('hidden'); }, 300);
 }
 
 function init3D() {
@@ -751,20 +639,59 @@ function init3D() {
     if (renderer) return; 
     
     scene = new THREE.Scene(); 
-    scene.background = new THREE.Color(0xf8fafc);
+    scene.background = new THREE.Color(0xf1f5f9);
     camera = new THREE.PerspectiveCamera(35, c.clientWidth / c.clientHeight || 1, 0.1, 2000);
     
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.xr.enabled = true;
+    renderer.xr.enabled = true; // Aktivera WebXR
     c.appendChild(renderer.domElement);
     
+    // WebXR AR Knapp med Nollpunkts-logik
+    if ('xr' in navigator) {
+        navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
+            if (supported) {
+                const arBtn = document.createElement('button');
+                arBtn.innerHTML = '<i class="fa-solid fa-camera mr-2"></i> AR';
+                arBtn.className = 'absolute bottom-4 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-5 py-2.5 rounded-full text-[11px] font-bold shadow-xl z-20 flex items-center justify-center active:scale-95 transition-transform border-2 border-white/10';
+                
+                arBtn.onclick = () => {
+                    navigator.xr.requestSession('immersive-ar', { optionalFeatures: ['local-floor'] }).then((session) => {
+                        renderer.xr.setSession(session);
+                        
+                        const car = currentResult ? currentResult.car : carDatabase[carSelect.value];
+                        
+                        // 1. Skala om för AR (1 enhet i ThreeJS = 1 meter i WebXR, våra mått är i cm)
+                        mainGroup.scale.set(0.01, 0.01, 0.01);
+                        
+                        // 2. Bestäm Nollpunkten. Vi vill att bagageluckan (som är vid z = -car.maxL/2 i vår grupp)
+                        // ska hamna exakt 1 meter framför användaren (z = -1).
+                        const zOffset = -1 + ((car.maxL / 2) * 0.01);
+                        
+                        // Sänk modellen lite mot golvet (y = -0.5 meter, anpassas dynamiskt vid local-floor tracking)
+                        mainGroup.position.set(0, -0.5, zOffset);
+                        
+                        session.addEventListener('end', () => {
+                            // Återställ skala och position när användaren stänger AR
+                            mainGroup.scale.set(1, 1, 1);
+                            mainGroup.position.set(0, 0, 0);
+                            resetCamera();
+                        });
+                    });
+                };
+                c.appendChild(arBtn);
+            }
+        }).catch(e => console.log('WebXR ej tillgängligt.', e));
+    }
+
     controls = new THREE.OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true; controls.dampingFactor = 0.08;
+    controls.enableDamping = true; 
+    controls.dampingFactor = 0.1;
     controls.maxPolarAngle = Math.PI / 2 - 0.05; 
+    controls.enablePan = false; 
     
-    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
-    const dl = new THREE.DirectionalLight(0xffffff, 0.6); 
+    scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+    const dl = new THREE.DirectionalLight(0xffffff, 0.5); 
     dl.position.set(-200, 350, 200); 
     scene.add(dl);
     
@@ -784,9 +711,7 @@ function init3D() {
 
         for (let hit of intersects) {
             let obj = hit.object;
-            while (obj && !obj.userData?.item && obj.parent && obj !== mainGroup) {
-                obj = obj.parent;
-            }
+            while (obj && !obj.userData?.item && obj.parent && obj !== mainGroup) { obj = obj.parent; }
             if (obj && obj.userData?.item) {
                 highlightBox(obj);
                 showBoxCard(obj.userData.item);
@@ -823,18 +748,12 @@ function highlightBox(mesh) {
 function showBoxCard(item) {
     const card = document.getElementById('boxInfoCard');
     document.getElementById('cardTitle').textContent = item.name;
-    document.getElementById('cardSpecs').innerHTML = `Emballage: ${item.l}×${item.w}×${item.h} cm · Vikt: ${item.weight} kg<br>Riktning: <strong class="text-blue-600">${item.rot}</strong>`;
-    
-    let ikeaSearchUrl = item.artNo ? `https://www.ikea.com/se/sv/search/?q=${item.artNo}` : `https://www.ikea.com/se/sv/search/?q=${encodeURIComponent(item.name)}`;
-    document.getElementById('cardLinkContainer').innerHTML = `
-        <span class="text-[9px] text-gray-400 font-bold">${item.artNo ? 'Artikelnr: ' + item.artNo : 'Manuell vara'}</span>
-        <a href="${ikeaSearchUrl}" target="_blank" rel="noopener noreferrer" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1">Öppna på IKEA <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i></a>
-    `;
+    document.getElementById('cardSpecs').innerHTML = `${item.l}×${item.w}×${item.h} cm · ${item.weight} kg<br><span class="text-blue-600 font-bold">${item.rot}</span>`;
     card.classList.remove('hidden');
 }
 
-function mat(color, opacity=1, rough=0.7) { 
-    return new THREE.MeshStandardMaterial({ color, transparent: opacity < 1, opacity, roughness: rough, side: THREE.DoubleSide }); 
+function mat(color, opacity=1) { 
+    return new THREE.MeshStandardMaterial({ color, transparent: opacity < 1, opacity, roughness: 0.7, side: THREE.DoubleSide }); 
 }
 
 function box(g, w, h, l, x, y, z, m) {
@@ -849,24 +768,13 @@ function createCar(car, mode) {
     const W = car.w + 34, H = car.h + 35, L = car.maxL + 100;
     const ox = -W/2, oz = -L/2 + 20;
     
-    const shellMat = mat(0x94a3b8, 0.12); 
+    const shellMat = mat(0x94a3b8, 0.15); 
     const seatMat = mat(0x1e293b, 0.95);  
     const floorMat = mat(0x334155, 0.95); 
     const dashMat = mat(0x0f172a, 1.0);   
-    const wheelMat = mat(0x020617, 1.0);  
     
     box(g, 6, H*0.45, L, ox, 0, oz, shellMat); 
     box(g, 6, H*0.45, L, ox+W-6, 0, oz, shellMat); 
-    
-    for(const x of [ox+5, ox+W-5]) {
-        for(const z of [oz+L*0.2, oz+L*0.8]) {
-            const wh = new THREE.Mesh(new THREE.CylinderGeometry(14, 14, 6, 24), wheelMat);
-            wh.rotation.z = Math.PI / 2;
-            wh.position.set(x, -6, z);
-            g.add(wh);
-        }
-    }
-
     box(g, car.w, 4, car.trunkL, -car.w/2, -4, -car.maxL/2, floorMat);
 
     if (mode === 'trunk') {
@@ -874,29 +782,16 @@ function createCar(car, mode) {
         box(g, car.w*0.8, 14, 8, -car.w*0.4, car.h*0.55, car.trunkL - car.maxL/2 + 7, seatMat); 
     } else if (mode === 'split') {
         box(g, car.w*0.48, car.h*0.55, 15, -car.w/2, 0, car.trunkL - car.maxL/2, seatMat);
-        box(g, car.w*0.4, 14, 8, -car.w*0.46, car.h*0.55, car.trunkL - car.maxL/2 + 7, seatMat); 
         box(g, car.w*0.52, 4, car.maxL - car.trunkL, -car.w/2 + car.w*0.48, -4, car.trunkL - car.maxL/2, floorMat);
     } else if (mode === 'flat' || mode === 'center') {
         box(g, car.w, 4, car.maxL - car.trunkL, -car.w/2, -4, car.trunkL - car.maxL/2, floorMat);
     }
 
     const seatZ = car.maxL - 45;
-    const exactCorridor = 26;
-    const seatW = (car.w - exactCorridor) / 2;
-    
+    const seatW = (car.w - 26) / 2;
     box(g, seatW, car.h*0.6, 30, -car.w/2, 0, seatZ - car.maxL/2, seatMat);
-    box(g, seatW*0.6, 15, 8, -car.w/2 + seatW*0.2, car.h*0.6, seatZ - car.maxL/2 + 20, seatMat); 
-    
-    box(g, seatW, car.h*0.6, 30, car.w/2 - seatW, 0, seatZ - car.maxL/2, seatMat);
-    box(g, seatW*0.6, 15, 8, car.w/2 - seatW*0.8, car.h*0.6, seatZ - car.maxL/2 + 20, seatMat); 
-
+    box(g, seatW, car.h*0.6, 30, car.w/2 - seatW, 0, seatZ - car.maxL/2, seatMat); 
     box(g, 26, car.h*0.4, 40, -13, 0, seatZ - 2 - car.maxL/2, dashMat);
-
-    box(g, car.w, car.h*0.4, 25, -car.w/2, 0, car.maxL - 10 - car.maxL/2, dashMat);
-    const steeringWheel = new THREE.Mesh(new THREE.TorusGeometry(9, 2, 16, 32), dashMat);
-    steeringWheel.rotation.x = Math.PI / 2.5;
-    steeringWheel.position.set(-car.w*0.25, car.h*0.45, car.maxL - 5 - car.maxL/2);
-    g.add(steeringWheel);
 
     return g;
 }
@@ -909,18 +804,14 @@ function update3D(car, placed, mode) {
     mainGroup.add(g);
     
     placed.forEach(it => {
-        const m = mat(it.color, 0.95);
-        const mesh = box(mainGroup, it.w, it.h, it.l, it.x - car.w/2, it.y, it.z - car.maxL/2, m);
-        
+        const mesh = box(mainGroup, it.w, it.h, it.l, it.x - car.w/2, it.y, it.z - car.maxL/2, mat(it.color, 0.95));
         const edges = new THREE.LineSegments(
             new THREE.EdgesGeometry(new THREE.BoxGeometry(it.w, it.h, it.l)), 
-            new THREE.LineBasicMaterial({ color: 0x0f172a, linewidth: 1, transparent: true, opacity: 0.5 })
+            new THREE.LineBasicMaterial({ color: 0x0f172a, transparent: true, opacity: 0.3 })
         );
         edges.position.copy(mesh.position); 
         mainGroup.add(edges);
-
-        mesh.userData.item = it;
-        mesh.userData.edges = edges;
+        mesh.userData = { item: it, edges: edges };
     });
     
     resetCamera();
@@ -935,17 +826,15 @@ function resetCamera() {
 }
 
 function setView(v) {
-    const car = carDatabase[carSelect.value];
-    const z = -car.maxL * 0.2;
-    if (v === 'rear') camera.position.set(0, car.h * 0.9, -car.maxL * 1.35);
-    else if (v === 'side') camera.position.set(car.w * 2.2, car.h * 0.85, z);
-    else if (v === 'top') camera.position.set(0, car.h * 3.6, z);
+    const c = carDatabase[carSelect.value];
+    const z = -c.maxL * 0.2;
+    if (v === 'rear') camera.position.set(0, c.h * 0.9, -c.maxL * 1.35);
+    else if (v === 'side') camera.position.set(c.w * 2.2, c.h * 0.85, z);
     controls.target.set(0, 0, z); 
     controls.update();
 }
 
-// Kör vid uppstart
-handleCarSelect();
+updateCarInfo();
 </script>
 </body>
 </html>
